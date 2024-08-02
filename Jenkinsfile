@@ -36,7 +36,16 @@ pipeline {
                             #test -f build/index.html
                             npm test
                         '''
-                    }       
+                    }
+                      post {
+                        always {
+                            // we need to add this code in section Dashboard to allow us display index.html
+                                //--> manage jenkins 
+                                // --> tools ans action 
+                                    //--> console scripts "System.setProperty("hudson.DirectoryBrowserSupport.CSP", "sandbox allow-scripts;")"
+                            junit 'jest-results/junit.xml'
+                        }
+    }       
                 }
 
                 stage('E2E')  {
@@ -54,6 +63,15 @@ pipeline {
                             npx playwright test --reporter=html
                             '''
                     }
+                      post {
+                        always {
+                            // we need to add this code in section Dashboard to allow us display index.html
+                                //--> manage jenkins 
+                                // --> tools ans action 
+                                    //--> console scripts "System.setProperty("hudson.DirectoryBrowserSupport.CSP", "sandbox allow-scripts;")"
+                            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwright HTML Report', reportTitles: '', useWrapperFileDirectly: true])
+                        }
+                    }
                 }
             }
         }
@@ -61,14 +79,5 @@ pipeline {
      
     }
 
-    post {
-        always {
-            // we need to add this code in section Dashboard to allow us display index.html
-                //--> manage jenkins 
-                // --> tools ans action 
-                    //--> console scripts "System.setProperty("hudson.DirectoryBrowserSupport.CSP", "sandbox allow-scripts;")"
-            junit 'jest-results/junit.xml'
-            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwright HTML Report', reportTitles: '', useWrapperFileDirectly: true])
-        }
-    }
+  
 }
