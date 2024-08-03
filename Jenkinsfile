@@ -2,7 +2,6 @@ pipeline {
     agent any
 
     stages {
-        /*
         stage('Build') {
             agent {
                 docker {
@@ -21,7 +20,7 @@ pipeline {
                     '''
             }
         }
-        */
+        
         stage("Tests"){
             parallel{
                 stage('Unit Test')  {
@@ -37,7 +36,7 @@ pipeline {
                             npm test
                         '''
                     }
-                      post {
+                    post {
                         always {
                             // we need to add this code in section Dashboard to allow us display index.html
                                 //--> manage jenkins 
@@ -45,7 +44,7 @@ pipeline {
                                     //--> console scripts "System.setProperty("hudson.DirectoryBrowserSupport.CSP", "sandbox allow-scripts;")"
                             junit 'jest-results/junit.xml'
                         }
-    }       
+                    }       
                 }
 
                 stage('E2E')  {
@@ -73,6 +72,20 @@ pipeline {
                         }
                     }
                 }
+            }
+        }
+           stage('Deploy') {
+            agent {
+                docker {
+                    image 'node:18-alpine'
+                    reuseNode true
+                }
+            }
+            steps {
+                sh '''
+                    npm install netlify-cli -g  
+                    netlify --version
+                    '''
             }
         }
 
