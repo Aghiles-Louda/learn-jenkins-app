@@ -3,7 +3,6 @@ pipeline {
     environment {
         NETLIFY_SITE_ID= 'bacb0a3f-e827-4196-a17a-9a194b6fbd0d'
         NETLIFY_AUTH_TOKEN= credentials('netlify-token')
-
     }
 
     stages {
@@ -62,9 +61,6 @@ pipeline {
                     }
                     steps{
                         sh '''
-                            npm install  serve
-                            node_modules/.bin/serve -s build &
-                            sleep 10
                             npx playwright test --reporter=html
                             '''
                     }
@@ -74,7 +70,7 @@ pipeline {
                                 //--> manage jenkins 
                                 // --> tools ans action 
                                     //--> console scripts "System.setProperty("hudson.DirectoryBrowserSupport.CSP", "sandbox allow-scripts;")"
-                            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwright HTML Report', reportTitles: '', useWrapperFileDirectly: true])
+                            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwright Local', reportTitles: '', useWrapperFileDirectly: true])
                         }
                     }
                 }
@@ -97,6 +93,35 @@ pipeline {
                     '''
             }
         }
+          stage('Prod E2E')  {
+                    agent {
+                        docker {
+                            image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
+                            reuseNode true
+                        }
+                    }
+                    environment {
+                        CI_ENVIRONMENT_URL= 'https://ubiquitous-frangipane-bc1a21.netlify.app/'
+                    }
+
+                    steps{
+                        sh '''
+                            npm install  serve
+                            node_modules/.bin/serve -s build &
+                            sleep 10
+                            npx playwright test --reporter=html
+                            '''
+                    }
+                      post {
+                        always {
+                            // we need to add this code in section Dashboard to allow us display index.html
+                                //--> manage jenkins 
+                                // --> tools ans action 
+                                    //--> console scripts "System.setProperty("hudson.DirectoryBrowserSupport.CSP", "sandbox allow-scripts;")"
+                            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwright E2E', reportTitles: '', useWrapperFileDirectly: true])
+                        }
+                    }
+                }
 
      
     }
